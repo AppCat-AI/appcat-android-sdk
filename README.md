@@ -100,11 +100,25 @@ val attribution = AppCat.getAttribution()
 
 ## Installation
 
-### Gradle (JitPack)
+The closed-source core AAR is embedded inside the published artifact, so a single dependency declaration is all that is needed — no extra `flatDir` repos or AARs to copy.
 
-The SDK is published via JitPack. The closed-source core AAR is embedded inside the published artifact, so a single dependency declaration is all that is needed.
+### Gradle (Maven Central — recommended)
 
-In your **root** `settings.gradle` (or `build.gradle`):
+In your **app module** `build.gradle`:
+
+```groovy
+dependencies {
+    implementation 'ai.appcat:appcat-android-sdk:0.1.1'
+}
+```
+
+`mavenCentral()` is already in `dependencyResolutionManagement` for new Android Studio projects. Nothing else to add.
+
+### Gradle (JitPack — fallback)
+
+If your build can't reach Maven Central, JitPack mirrors every tagged release.
+
+In your **root** `settings.gradle`:
 
 ```groovy
 dependencyResolutionManagement {
@@ -121,16 +135,6 @@ In your **app module** `build.gradle`:
 ```groovy
 dependencies {
     implementation 'com.github.AppCat-AI:appcat-android-sdk:0.1.1'
-}
-```
-
-### Gradle (Maven Central)
-
-Maven Central publication is set up in parallel. Once available:
-
-```groovy
-dependencies {
-    implementation 'com.appcat:appcat-android-sdk:0.1.1'
 }
 ```
 

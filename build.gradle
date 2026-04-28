@@ -1,17 +1,24 @@
 // AppCat Android SDK — open-source Kotlin wrapper around the closed-source AppCatCore AAR.
 //
-// Distribution model:
-//   - The closed-source `libs/appcat-core.aar` is embedded into the published artifact via
-//     the fat-aar plugin (aasitnikov fork — actively maintained for AGP 8.x+).
-//   - This means consumers add ONE dependency (this SDK) and get everything they need:
-//     no separate flatDir, no separate AAR to copy.
-//   - JitPack picks up tagged releases from GitHub; Maven Central is set up in parallel
-//     and uses the same `maven-publish` configuration below.
+// Distribution:
+//   - JitPack picks up tagged releases from GitHub automatically (no extra config).
+//   - Maven Central uses com.vanniktech.maven.publish, which reads POM metadata
+//     from gradle.properties and uploads to the Sonatype Central Portal
+//     (the OSSRH replacement, live since June 2025).
+//
+//   Per-release flow:
+//     1. Bump VERSION_NAME in gradle.properties.
+//     2. git tag <version> && git push origin <version>      (JitPack auto-builds)
+//     3. ./gradlew publishAndReleaseToMavenCentral             (Maven Central)
+//
+//   The closed-source `libs/appcat-core.aar` is embedded into the published artifact
+//   via the fat-aar plugin, so consumers add ONE dependency and get everything.
 
 buildscript {
   repositories {
     google()
     mavenCentral()
+    gradlePluginPortal()
     maven {
       url 'https://jitpack.io'
       content { includeGroup 'com.github.aasitnikov' }
@@ -21,13 +28,14 @@ buildscript {
     classpath 'com.android.tools.build:gradle:8.7.3'
     classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25'
     classpath 'com.github.aasitnikov:fat-aar-android:1.4.2'
+    classpath 'com.vanniktech:gradle-maven-publish-plugin:0.30.0'
   }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'com.kezong.fat-aar'
-apply plugin: 'maven-publish'
+apply plugin: 'com.vanniktech.maven.publish'
 
 android {
   namespace "com.appcat.sdk"
@@ -60,12 +68,6 @@ android {
   testOptions {
     unitTests { includeAndroidResources = true }
   }
-
-  publishing {
-    singleVariant('release') {
-      withSourcesJar()
-    }
-  }
 }
 
 repositories {
@@ -88,39 +90,8 @@ dependencies {
   testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
 }
 
-afterEvaluate {
-  publishing {
-    publications {
-      release(MavenPublication) {
-        from components.release
-        groupId = 'com.appcat'
-        artifactId = 'appcat-android-sdk'
-        version = project.findProperty('VERSION_NAME') ?: '0.1.1'
-
-        pom {
-          name = 'AppCat Android SDK'
-          description = 'Server-side attribution SDK for Android. Track conversions via Meta CAPI, TikTok Events API, Google Ads, and Apple Search Ads. Resolve deferred deep links on first install.'
-          url = 'https://github.com/AppCat-AI/appcat-android-sdk'
-          licenses {
-            license {
-              name = 'MIT License'
-              url = 'https://opensource.org/licenses/MIT'
-            }
-          }
-          developers {
-            developer {
-              id = 'appcat'
-              name = 'AppCat'
-              email = 'support@appcat.ai'
-            }
-          }
-          scm {
-            connection = 'scm:git:git://github.com/AppCat-AI/appcat-android-sdk.git'
-            developerConnection = 'scm:git:ssh://git@github.com/AppCat-AI/appcat-android-sdk.git'
-            url = 'https://github.com/AppCat-AI/appcat-android-sdk'
-          }
-        }
-      }
-    }
-  }
+// Tell Vanniktech to publish the `release` Android variant with sources + javadoc JARs.
+// All POM metadata, Sonatype host, and signing toggles are read from gradle.properties.
+mavenPublishing {
+  configure(new com.vanniktech.maven.publish.AndroidSingleVariantLibrary('release', true, true))
 }
