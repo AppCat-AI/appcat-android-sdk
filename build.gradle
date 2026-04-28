@@ -95,7 +95,7 @@ afterEvaluate {
         from components.release
         groupId = 'com.appcat'
         artifactId = 'appcat-android-sdk'
-        version = project.findProperty('VERSION_NAME') ?: '0.1.0'
+        version = project.findProperty('VERSION_NAME') ?: '0.1.1'
 
         pom {
           name = 'AppCat Android SDK'

@@ -10,6 +10,17 @@ Track events and attribute installs across Meta, TikTok, Google Ads, and Apple S
 - Retrieve the AppCat device ID and attribution data
 - Both callback-based and Kotlin coroutine APIs available
 
+## Get an API Key
+
+You need an AppCat API key (and optionally an App ID) before the SDK can run.
+
+1. Sign up at [appcat.ai](https://appcat.ai).
+2. Click **+ New Product** in the top right and create your app (select **Android**).
+3. In the sidebar, open **SDK Guides → API Key Management**.
+4. Copy your **API Key**. The **App ID** is optional — it can be resolved automatically from the API key.
+
+Pass these into `AppCat.configure(...)` below.
+
 ## Features (with examples)
 
 ### Getting Started
@@ -109,7 +120,7 @@ In your **app module** `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation 'com.github.AppCat-AI:appcat-android-sdk:0.1.0'
+    implementation 'com.github.AppCat-AI:appcat-android-sdk:0.1.1'
 }
 ```
 
@@ -119,7 +130,7 @@ Maven Central publication is set up in parallel. Once available:
 
 ```groovy
 dependencies {
-    implementation 'com.appcat:appcat-android-sdk:0.1.0'
+    implementation 'com.appcat:appcat-android-sdk:0.1.1'
 }
 ```
 
