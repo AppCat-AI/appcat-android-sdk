@@ -1,0 +1,50 @@
+name: Release
+
+# Triggered by pushing a tag (e.g. `0.1.0`). Verifies the SDK builds and
+# publishes successfully to the local Maven cache, then warms JitPack by
+# triggering a build for the new tag. JitPack itself owns the canonical
+# distribution; this workflow exists to surface build failures before
+# consumers hit them.
+#
+# Maven Central publication is set up separately (see issue tracker) and uses
+# the same `maven-publish` configuration in build.gradle.
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  verify-and-warm-jitpack:
+    name: Verify build and warm JitPack
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Verify version matches tag
+        run: |
+          GRADLE_VERSION="$(grep -E "VERSION_NAME=" gradle.properties 2>/dev/null | awk -F'=' '{print $2}' || true)"
+          TAG_VERSION="${GITHUB_REF_NAME}"
+          if [ -n "$GRADLE_VERSION" ] && [ "$GRADLE_VERSION" != "$TAG_VERSION" ]; then
+            echo "gradle.properties VERSION_NAME ($GRADLE_VERSION) does not match tag ($TAG_VERSION)" >&2
+            exit 1
+          fi
+
+      - name: Build and publish to local Maven cache
+        run: ./gradlew clean :publishReleasePublicationToMavenLocal -PVERSION_NAME=${GITHUB_REF_NAME}
+
+      - name: Warm JitPack build
+        # JitPack builds artifacts on first request. Hitting the build endpoint
+        # at release time pre-warms the cache so consumers do not pay the
+        # cold-build latency on first integration.
+        run: |
+          curl -sSf -o /dev/null -w "JitPack warm: %{http_code}\n" \
+            "https://jitpack.io/com/github/AppCat-AI/appcat-android-sdk/${GITHUB_REF_NAME}/appcat-android-sdk-${GITHUB_REF_NAME}.pom" \
+            || echo "JitPack warm request failed (non-fatal)."

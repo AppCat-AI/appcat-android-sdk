@@ -1,0 +1,126 @@
+// AppCat Android SDK — open-source Kotlin wrapper around the closed-source AppCatCore AAR.
+//
+// Distribution model:
+//   - The closed-source `libs/appcat-core.aar` is embedded into the published artifact via
+//     the fat-aar plugin (aasitnikov fork — actively maintained for AGP 8.x+).
+//   - This means consumers add ONE dependency (this SDK) and get everything they need:
+//     no separate flatDir, no separate AAR to copy.
+//   - JitPack picks up tagged releases from GitHub; Maven Central is set up in parallel
+//     and uses the same `maven-publish` configuration below.
+
+buildscript {
+  repositories {
+    google()
+    mavenCentral()
+    maven {
+      url 'https://jitpack.io'
+      content { includeGroup 'com.github.aasitnikov' }
+    }
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:8.7.3'
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25'
+    classpath 'com.github.aasitnikov:fat-aar-android:1.4.2'
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'com.kezong.fat-aar'
+apply plugin: 'maven-publish'
+
+android {
+  namespace "com.appcat.sdk"
+  compileSdk 34
+
+  defaultConfig {
+    minSdk 21
+    targetSdk 34
+    consumerProguardFiles 'consumer-rules.pro'
+  }
+
+  buildFeatures {
+    buildConfig true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  sourceSets {
+    main { java.srcDirs += 'src/main/kotlin' }
+    test { java.srcDirs += 'src/test/kotlin' }
+  }
+
+  testOptions {
+    unitTests { includeAndroidResources = true }
+  }
+
+  publishing {
+    singleVariant('release') {
+      withSourcesJar()
+    }
+  }
+}
+
+repositories {
+  google()
+  mavenCentral()
+  flatDir { dirs 'libs' }
+}
+
+dependencies {
+  // `embed` is the fat-aar configuration that merges the closed-source core AAR into
+  // the final published AAR. Consumers therefore do not need to declare appcat-core
+  // separately or configure a flatDir repository.
+  embed(name: 'appcat-core', ext: 'aar')
+
+  implementation "com.android.installreferrer:installreferrer:2.2"
+  implementation "com.google.android.gms:play-services-ads-identifier:18.0.1"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
+
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
+}
+
+afterEvaluate {
+  publishing {
+    publications {
+      release(MavenPublication) {
+        from components.release
+        groupId = 'com.appcat'
+        artifactId = 'appcat-android-sdk'
+        version = project.findProperty('VERSION_NAME') ?: '0.1.0'
+
+        pom {
+          name = 'AppCat Android SDK'
+          description = 'Server-side attribution SDK for Android. Track conversions via Meta CAPI, TikTok Events API, Google Ads, and Apple Search Ads. Resolve deferred deep links on first install.'
+          url = 'https://github.com/AppCat-AI/appcat-android-sdk'
+          licenses {
+            license {
+              name = 'MIT License'
+              url = 'https://opensource.org/licenses/MIT'
+            }
+          }
+          developers {
+            developer {
+              id = 'appcat'
+              name = 'AppCat'
+              email = 'support@appcat.ai'
+            }
+          }
+          scm {
+            connection = 'scm:git:git://github.com/AppCat-AI/appcat-android-sdk.git'
+            developerConnection = 'scm:git:ssh://git@github.com/AppCat-AI/appcat-android-sdk.git'
+            url = 'https://github.com/AppCat-AI/appcat-android-sdk'
+          }
+        }
+      }
+    }
+  }
+}

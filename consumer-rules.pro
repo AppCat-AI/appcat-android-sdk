@@ -1,0 +1,2 @@
+-keep class com.appcat.sdk.** { *; }
+-keep class com.appcat.core.** { *; }

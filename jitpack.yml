@@ -1,0 +1,8 @@
+# JitPack build configuration. See https://jitpack.io/docs/BUILDING/#gradle-projects.
+# When a tag is pushed to GitHub, JitPack runs `./gradlew install` (which we redirect
+# to `publishToMavenLocal`) and uploads the resulting AAR + POM as a Maven artifact at
+#   com.github.AppCat-AI:appcat-android-sdk:<tag>
+jdk:
+  - openjdk17
+install:
+  - ./gradlew clean :publishReleasePublicationToMavenLocal -PVERSION_NAME=$VERSION

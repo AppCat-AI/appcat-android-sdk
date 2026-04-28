@@ -1,0 +1,8 @@
+build/
+.gradle/
+local.properties
+*.class
+*.log
+.DS_Store
+
+# libs/ is intentionally tracked — contains the prebuilt core AAR

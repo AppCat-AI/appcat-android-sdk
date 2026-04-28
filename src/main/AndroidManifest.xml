@@ -1,0 +1,6 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.appcat.sdk">
+
+  <!-- Permissions are declared in the core library (com.appcat.core) -->
+
+</manifest>
