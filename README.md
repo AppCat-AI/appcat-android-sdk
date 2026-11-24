@@ -63,6 +63,8 @@ response.deepLinkParams?.let { params ->
 | `deepLinkParams` | `Map<String, String>?` | Query params from the matched ad click URL, or `null` if no match |
 | `geo` | `AppCatGeoResponse?` | Geo data. e.g. `city = "San Francisco"`, `country = "US"`, `state = "CA"` |
 
+On first open the SDK also sends the Play Install Referrer. Installs from Google App campaigns carry a `gclid` or `gbraid` there, so they attribute to Google Ads with no landing page and no extra code.
+
 ### Event Tracking
 
 ```kotlin

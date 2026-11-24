@@ -90,6 +90,12 @@ dependencies {
   testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
 }
 
+// fat-aar's explode tasks don't declare outputs that AGP 8's deep-link extraction reads;
+// order them explicitly or Gradle's task validation fails the build.
+tasks.matching { it.name.startsWith('extractDeepLinks') }.configureEach {
+  mustRunAfter(tasks.matching { it.name.startsWith('explode') })
+}
+
 // Tell Vanniktech to publish the `release` Android variant with sources + javadoc JARs.
 // All POM metadata, Sonatype host, and signing toggles are read from gradle.properties.
 mavenPublishing {
